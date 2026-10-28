@@ -1,0 +1,2 @@
+# Creative Sound Blaster GS5: let the logged-in user open its hidraw node (lighting control with gs5rgb)
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="041e", ATTRS{idProduct}=="329d", TAG+="uaccess"
