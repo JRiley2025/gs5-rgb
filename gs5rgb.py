@@ -23,7 +23,7 @@ import select
 import sys
 import time
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 VIDPID = "0000041E:0000329D"
 SEGMENTS = 7
@@ -203,6 +203,18 @@ class GS5:
                 return
         raise GS5Error(f"slot {slot} would not switch to {mode}")
 
+    def wake(self, slot=None):
+        """Re-assert the lighting on the active (or given) slot without changing its mode, colours or brightness.
+
+        The GS5 can go dark (most likely its auto-standby after a while without audio) while still reporting
+        lighting on, the same slot, mode and colours, so reading its state can't detect it. Re-sending the
+        hello, the slot switch and "on" brings it back. Long-running programs should call this every minute or so.
+        """
+        self._raw(0x09, [0x00], expect=bytes([0x05, 0x6A, 0x09]))
+        self._raw(0x2C, [0x01], expect=bytes([0x05, 0x6A, 0x2C]))
+        self.activate(slot or self.active_slot())
+        self.on()
+
     def activate(self, slot):
         self._set(0x2D, [slot])
         self._drain(0.3)          # another settings push follows a slot switch
@@ -273,6 +285,7 @@ def main(argv=None):
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("status", help="show on/off, brightness, active slot and each slot's mode")
     sub.add_parser("on")
+    sub.add_parser("wake", help="bring the strip back if it went dark (keeps mode, colours and brightness)")
     sub.add_parser("off")
     b = sub.add_parser("brightness", help="set brightness 0-100")
     b.add_argument("percent", type=int)
@@ -297,6 +310,8 @@ def main(argv=None):
                     print(f"  slot {slot}: {mode}{'  <- active' if slot == s['active_slot'] else ''}")
             elif a.cmd == "on":
                 g.on()
+            elif a.cmd == "wake":
+                g.wake()
             elif a.cmd == "off":
                 g.off()
             elif a.cmd == "brightness":

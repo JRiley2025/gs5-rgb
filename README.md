@@ -39,6 +39,7 @@ replug the GS5 if `gs5rgb.py status` says permission denied.
 ./gs5rgb.py brightness 40
 ./gs5rgb.py off
 ./gs5rgb.py on
+./gs5rgb.py wake                                                  # strip went dark? bring it back
 ./gs5rgb.py effect cycle --speed 750
 ./gs5rgb.py effect chasers --colours 00ff00 --speed 375 --direction bounce
 ./gs5rgb.py effect glowing --colours ff0000 --speed 1333
@@ -91,6 +92,10 @@ systemctl --user daemon-reload && systemctl --user enable --now gs5-gpu-load
 - Close Creative App (or don't run it on the same machine): both would be driving the strip.
 - Changing effect mode resets the soundbar's brightness to 69 %; the library puts your brightness back.
 - The GS5 stores the colours and effect per slot, so the last setting stays after the tool exits.
+- **The strip can go dark by itself** (most likely the soundbar's auto-standby after a while without audio) while
+  still reporting that lighting is on with the same colours, so reading its state can't detect it. `wake()`
+  (or `./gs5rgb.py wake`) brings it back without changing anything; long-running scripts should call it every
+  minute or so, as `examples/gpu-load.py` does.
 
 ## Contributing
 

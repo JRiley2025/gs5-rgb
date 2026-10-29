@@ -2,7 +2,8 @@
 """Colour the Sound Blaster GS5's strip by GPU load: green below 70 %, yellow from 70 %, red from 90 %.
 
 Reads AMD's /sys/class/drm/card*/device/gpu_busy_percent once a second and sends a colour frame when the colour
-changes (and once a minute anyway, in case the soundbar lost it). Reconnects if the GS5 is unplugged.
+changes, and once a minute anyway with a wake() first, because the GS5 can go dark on its own (see the
+README). Reconnects if the GS5 is unplugged.
 For NVIDIA, replace gpu_busy() with e.g. `nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits`.
 """
 import glob
@@ -62,6 +63,8 @@ def main():
             c = colour_for(load)
             if c != cur or time.monotonic() - last >= REFRESH:
                 try:
+                    if c == cur:        # periodic refresh: wake the strip too, in case it went dark
+                        dev.wake()
                     dev.static(c, setup=False)
                     cur, last = c, time.monotonic()
                 except OSError as e:

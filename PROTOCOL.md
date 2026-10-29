@@ -61,6 +61,13 @@ be lost; in testing a slot was left in mode `00` and only the centre of the stri
 
 **A mode change (`29`) resets the brightness to `b0` (69 %).** Set it again afterwards if you want something else.
 
+### Going dark on its own
+
+Seen on a GS5 left running overnight: the strip went dark while `26` still read `01` (on), `28` read `ff`, `2e`
+read slot 1, `2a 01` read static and `2c 01 01` read the expected colours. Nothing in the reported state changes,
+so it can't be detected. Re-sending hello (`09`), `2c 01`, `2d <slot>` and `25 01` brings it back without touching
+the mode, colours or brightness. The likely cause is the soundbar's auto-standby with no audio playing.
+
 ## Effect slots
 
 The GS5 keeps **6 effect slots** (1-6). Each holds one mode with its own settings, and one slot is active.
